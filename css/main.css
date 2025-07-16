@@ -1,0 +1,89 @@
+@font-face {
+    font-family: "Lexend";
+    src: url("font/Lexend-VariableFont_wght.ttf") format("truetype");
+}
+
+body {
+    font-family: "Lexend", sans-serif;
+    font-weight: 400;
+    font-optical-sizing: auto;
+    font-style: normal;
+}
+
+.title {
+    display: block;
+}
+
+.name_freq_parent {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.name_freq span {
+    margin: auto;
+    text-align: center;
+    font-size: 16pt;
+}
+
+.name_freq {
+    margin: 0.5rem;
+    padding: 0.5rem;
+    background-color: #EEE;
+    border-radius: 0.5rem;
+    display: inline-block;
+}
+
+.plot-container {
+    padding: 0.5rem;
+    margin: 0.5rem;
+    border: solid;
+    border-radius: 0.5rem;
+    display: inline-block;
+    background-color: #FFF;
+    position: relative;
+    z-index: 1;
+}
+
+button {
+  background-color: initial;
+  background-image: linear-gradient(-180deg, #FF7E31, #E62C03);
+  border-radius: 0.5rem;
+  box-shadow: rgba(0, 0, 0, 0.1) 0 2px 4px;
+  color: #FFFFFF;
+  cursor: pointer;
+  display: inline-block;
+  font-family: Verdana,sans-serif;
+  height: 2rem;
+  line-height: 2rem;
+  outline: 0;
+  overflow: hidden;
+  padding: 0 0.5rem;
+  pointer-events: auto;
+  position: relative;
+  text-align: center;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  vertical-align: top;
+  white-space: nowrap;
+  z-index: 9;
+  border: 0;
+  transition: box-shadow .2s;
+}
+
+button:hover {
+  box-shadow: rgba(253, 76, 0, 0.5) 0 3px 8px;
+}
+
+button:active {
+    background-image: linear-gradient(0deg, #FF7E31, #E62C03);
+}
+
+dialog {
+    padding: 0.5rem;
+    margin: 0.5rem;
+    width: 90%;
+    height: 10rem;
+    border-color: transparent;
+}

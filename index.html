@@ -1,0 +1,201 @@
+<!doctype html>
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>Daily Names</title>
+        <meta name="description" content="Daily Names">
+        <meta name="author" content="Thomas G. Brooks">
+
+        <meta property="og:title" content="Daily Names"
+        <meta property="og:type" content="website">
+
+        <link rel="stylesheet" href="css/main.css">
+    </head>
+
+    <body>
+        <h1> Daily Names </h1>
+
+        <div class="name_freq_parent">
+            <span class="name_freq"><span class="title"></span><span class="plot-container" id="name_freq1" draggable="true" ondragstart="freq_plot_dragstart(event)" ondragover="freq_plot_dragover(event)" ondrop="freq_plot_drop(event)"><svg data-idx="0" width=150 height=100 xmlns="http://www.w3.org/2000/svg"></svg></span></span>
+            <span class="name_freq"><span class="title"></span><span class="plot-container" id="name_freq2" draggable="true" ondragstart="freq_plot_dragstart(event)" ondragover="freq_plot_dragover(event)" ondrop="freq_plot_drop(event)"><svg data-idx="1" width=150 height=100 xmlns="http://www.w3.org/2000/svg"></svg></span></span>
+            <span class="name_freq"><span class="title"></span><span class="plot-container" id="name_freq3" draggable="true" ondragstart="freq_plot_dragstart(event)" ondragover="freq_plot_dragover(event)" ondrop="freq_plot_drop(event)"><svg data-idx="2" width=150 height=100 xmlns="http://www.w3.org/2000/svg"></svg></span></span>
+            <span class="name_freq"><span class="title"></span><span class="plot-container" id="name_freq4" draggable="true" ondragstart="freq_plot_dragstart(event)" ondragover="freq_plot_dragover(event)" ondrop="freq_plot_drop(event)"><svg data-idx="3" width=150 height=100 xmlns="http://www.w3.org/2000/svg"></svg></span></span>
+            <span class="name_freq"><span class="title"></span><span class="plot-container" id="name_freq5" draggable="true" ondragstart="freq_plot_dragstart(event)" ondragover="freq_plot_dragover(event)" ondrop="freq_plot_drop(event)"><svg data-idx="4" width=150 height=100 xmlns="http://www.w3.org/2000/svg"></svg></span></span>
+        </div>
+
+        <button onclick="submit_answers()"> Submit </button>
+
+        <dialog closedby="any" id="score-dialog">
+            You scored: <span id="score-box"></span>
+        </dialog>
+    </body>
+
+    <script type="text/javascript" src="rng.js"></script>
+
+    <script>
+        const freq_plot_height = 100;
+        const freq_plot_width = 150;
+        let get_plot_points = function(y_values) {
+            const max = Math.max(...y_values);
+            const yscale = freq_plot_height / max;
+            const xscale = freq_plot_width / (y_values.length-1);
+            return (y_values
+                .map(
+                    function(y,i) {
+                        return i*xscale + "," + (freq_plot_height-y*yscale);
+                    }
+                )
+                .join(" "));
+        };
+        let freq_plot_dragstart = function(event) {
+            // Add the target element's id to the data transfer object for later use
+            event.dataTransfer.setData("text/plain", event.target.id);
+            event.dataTransfer.dropEffect = "move";
+        };
+        let freq_plot_dragover = function(event) {
+            event.preventDefault();
+        };
+        let freq_plot_drop = function(event) {
+            event.preventDefault();
+            const dragee = document.getElementById(event.dataTransfer.getData("text/plain"));
+            const target = event.currentTarget;
+            const dragee_parent = dragee.parentElement;
+            const target_parent = target.parentElement;
+            const dragee_initial_bb = dragee.getBoundingClientRect();
+            const target_initial_bb = target.getBoundingClientRect();
+            // Move the plots themselves
+            target_parent.appendChild(dragee);
+            dragee_parent.appendChild(target);
+            // Animate using the "FLIP" method from its original position
+            // only animating the non-dragged one
+            const target_final_bb = target.getBoundingClientRect();
+            const dragee_final_bb = dragee.getBoundingClientRect();
+            const target_delta_x = target_initial_bb.left - target_final_bb.left;
+            const target_delta_y = target_initial_bb.top - target_final_bb.top;
+            target.animate([
+                {
+                    transform: `translate(${target_delta_x}px, ${target_delta_y}px)`,
+                    "z-index": 0,
+                },
+                {
+                    transform: 'none',
+                    "z-index": 1,
+                },
+            ], {duration: 250, easing: 'ease-in', fill: 'both'});
+
+            const dragee_delta_x = dragee_initial_bb.left - dragee_final_bb.left;
+            const dragee_delta_y = dragee_initial_bb.top - dragee_final_bb.top;
+            dragee.animate([
+                {
+                    transform: `translate(${dragee_delta_x}px, ${dragee_delta_y}px)`,
+                    "z-index": 1,
+                },
+                {
+                    transform: 'none',
+                    "z-index": 1,
+                },
+            ], {duration: 200, easing: 'ease-in-out', fill: 'both'});
+
+
+            // Update game state
+            const dragee_plot = dragee.getElementsByTagName("svg")[0];
+            const target_plot = target.getElementsByTagName("svg")[0];
+            const dragee_idx = parseInt(dragee_plot.getAttribute('data-idx'));
+            const target_idx = parseInt(target_plot.getAttribute('data-idx'));
+            const dragee_pos = game_state['plot_positions'].indexOf(dragee_idx);
+            const target_pos = game_state['plot_positions'].indexOf(target_idx);
+            game_state['plot_positions'][dragee_pos] = target_idx;
+            game_state['plot_positions'][target_pos] = dragee_idx;
+        };
+
+        let set_names = function(names) {
+            for ([idx, name] of names.entries()) {
+                let box = document.getElementsByClassName("name_freq")[idx];
+                let title = box.getElementsByClassName("title")[0];
+                title.innerText = name;
+            }
+        };
+
+        let create_freq_plot = function(name, place) {
+            let freq = name_data[name]['freq_by_year'];
+            const true_index = game_state.names.indexOf(name);
+            let plot = document.getElementsByClassName("name_freq")[place].getElementsByTagName("svg")[0];
+            plot.setAttribute("width", freq_plot_width + "px");
+            plot.setAttribute("height", freq_plot_height + "px");
+            plot.setAttribute("data-idx", true_index);
+            let path = document.createElementNS("http://www.w3.org/2000/svg", 'polyline');
+            plot.appendChild(path);
+            path.setAttribute('points', get_plot_points(freq));
+            path.setAttribute('fill', 'transparent');
+            path.setAttribute('stroke', 'black');
+            path.setAttribute('stroke-width', "3");
+        };
+
+        let load_name_data = function(names) {
+            let promises = [];
+            for (const name of names) {
+                // Load the frequency data for each name
+                let promise = fetch("data/name_db/" + sex + "." + name + ".json")
+                    .then(response => {return response.json()})
+                    .then(data => {
+                        name_data[name] = data;
+                    });
+                promises.push(promise)
+            }
+            Promise.all(promises).then((values) =>{
+                // Render only after all data are loaded
+                const num_plots = names.length;
+                const plot_order = choose_n(Array(num_plots).keys().toArray(), num_plots, rng);
+                for (let i = 0; i < num_plots; i++) {
+                    const name = names[i];
+                    const place = plot_order[i];
+                    create_freq_plot(name, place)
+                }
+                game_state['plot_positions'] = plot_order;
+            });
+        };
+
+        let select_names = function(name_list) {
+            const names = choose_n(name_list, 5, rng);
+            return names;
+        };
+
+        let submit_answers = function() {
+            const score = game_state['plot_positions'].map((x,i) => x == i).reduce((a,b) => a+b);
+            console.log("Got a score of " + score);
+            const score_box = document.getElementById("score-box");
+            score_box.innerText = score + "/" + game_state['plot_positions'].length;
+            const score_dialog = document.getElementById("score-dialog");
+            score_dialog.showModal();
+        };
+
+        const currentDate = new Date();
+        const year = currentDate.getFullYear();
+        const date = currentDate.getDate();
+        const month = currentDate.getMonth();
+        const num = year*100*100 + month*100 + date + 1;
+
+        const rng = seed_rng(num);
+
+        let name_list = [];
+        let name_data = {};
+        let sex = "F";
+        let full_sex = sex == "F" ? "female" : "male";
+        let game_state = {
+            names: [],
+            plot_positions: [],
+        };
+        fetch("data/" + full_sex + "_name_list.txt")
+            .then(response => { return response.text() })
+            .then(data => {
+                name_list = data.split("\n");
+                game_state.names = select_names(name_list);
+                set_names(game_state.names);
+                load_name_data(game_state.names);
+            });
+    </script>
+</html>
+
