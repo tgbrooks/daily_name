@@ -54,11 +54,12 @@ button {
   cursor: pointer;
   display: inline-block;
   font-family: Verdana,sans-serif;
-  height: 2rem;
-  line-height: 2rem;
+  font-size: 1.5rem;
+  height: 3rem;
+  line-height: 3rem;
   outline: 0;
   overflow: hidden;
-  padding: 0 0.5rem;
+  padding: 0 1.0rem;
   pointer-events: auto;
   position: relative;
   text-align: center;
@@ -84,6 +85,15 @@ dialog {
     padding: 0.5rem;
     margin: 0.5rem;
     width: 90%;
-    height: 10rem;
+    min-height: 10rem;
     border-color: transparent;
+    font-size: 1.5rem;
+}
+
+#score-dialog .correct {
+    background-color: #9F9;
+}
+
+#score-dialog .incorrect {
+    background-color: #F99;
 }

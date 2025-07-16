@@ -18,7 +18,7 @@
     <body>
         <h1> Daily Names </h1>
 
-        <div class="name_freq_parent">
+        <div class="name_freq_parent" id="name_freq_parent">
             <span class="name_freq"><span class="title"></span><span class="plot-container" id="name_freq1" draggable="true" ondragstart="freq_plot_dragstart(event)" ondragover="freq_plot_dragover(event)" ondrop="freq_plot_drop(event)"><svg data-idx="0" width=150 height=100 xmlns="http://www.w3.org/2000/svg"></svg></span></span>
             <span class="name_freq"><span class="title"></span><span class="plot-container" id="name_freq2" draggable="true" ondragstart="freq_plot_dragstart(event)" ondragover="freq_plot_dragover(event)" ondrop="freq_plot_drop(event)"><svg data-idx="1" width=150 height=100 xmlns="http://www.w3.org/2000/svg"></svg></span></span>
             <span class="name_freq"><span class="title"></span><span class="plot-container" id="name_freq3" draggable="true" ondragstart="freq_plot_dragstart(event)" ondragover="freq_plot_dragover(event)" ondrop="freq_plot_drop(event)"><svg data-idx="2" width=150 height=100 xmlns="http://www.w3.org/2000/svg"></svg></span></span>
@@ -29,7 +29,15 @@
         <button onclick="submit_answers()"> Submit </button>
 
         <dialog closedby="any" id="score-dialog">
-            You scored: <span id="score-box"></span>
+            <p>You scored: <span id="score-box"></span></p>
+            <p>Answers</p>
+            <div class="name_freq_parent">
+                <span class="name_freq"><span class="title"></span><span class="plot-container"><svg width=150 height=100 xmlns="http://www.w3.org/2000/svg"></svg></span></span>
+                <span class="name_freq"><span class="title"></span><span class="plot-container"><svg width=150 height=100 xmlns="http://www.w3.org/2000/svg"></svg></span></span>
+                <span class="name_freq"><span class="title"></span><span class="plot-container"><svg width=150 height=100 xmlns="http://www.w3.org/2000/svg"></svg></span></span>
+                <span class="name_freq"><span class="title"></span><span class="plot-container"><svg width=150 height=100 xmlns="http://www.w3.org/2000/svg"></svg></span></span>
+                <span class="name_freq"><span class="title"></span><span class="plot-container"><svg width=150 height=100 xmlns="http://www.w3.org/2000/svg"></svg></span></span>
+            </div>
         </dialog>
     </body>
 
@@ -113,16 +121,22 @@
 
         let set_names = function(names) {
             for ([idx, name] of names.entries()) {
-                let box = document.getElementsByClassName("name_freq")[idx];
+                // For the main entry boxes
+                let box = document.getElementById("name_freq_parent").getElementsByClassName("name_freq")[idx];
                 let title = box.getElementsByClassName("title")[0];
                 title.innerText = name;
+
+                // For the answer keys too
+                let box2 = document.getElementById("score-dialog").getElementsByClassName("name_freq")[idx];
+                let title2 = box2.getElementsByClassName("title")[0];
+                title2.innerText = name;
             }
         };
 
         let create_freq_plot = function(name, place) {
             let freq = name_data[name]['freq_by_year'];
             const true_index = game_state.names.indexOf(name);
-            let plot = document.getElementsByClassName("name_freq")[place].getElementsByTagName("svg")[0];
+            let plot = document.getElementById("name_freq_parent").getElementsByClassName("name_freq")[place].getElementsByTagName("svg")[0];
             plot.setAttribute("width", freq_plot_width + "px");
             plot.setAttribute("height", freq_plot_height + "px");
             plot.setAttribute("data-idx", true_index);
@@ -132,6 +146,18 @@
             path.setAttribute('fill', 'transparent');
             path.setAttribute('stroke', 'black');
             path.setAttribute('stroke-width', "3");
+
+            // Same for the answer key
+            let plot2 = document.getElementById("score-dialog").getElementsByClassName("name_freq")[true_index].getElementsByTagName("svg")[0];
+            plot2.setAttribute("width", freq_plot_width + "px");
+            plot2.setAttribute("height", freq_plot_height + "px");
+            plot2.setAttribute("data-idx", true_index);
+            let path2 = document.createElementNS("http://www.w3.org/2000/svg", 'polyline');
+            plot2.appendChild(path2);
+            path2.setAttribute('points', get_plot_points(freq));
+            path2.setAttribute('fill', 'transparent');
+            path2.setAttribute('stroke', 'black');
+            path2.setAttribute('stroke-width', "3");
         };
 
         let load_name_data = function(names) {
@@ -164,12 +190,20 @@
         };
 
         let submit_answers = function() {
-            const score = game_state['plot_positions'].map((x,i) => x == i).reduce((a,b) => a+b);
-            console.log("Got a score of " + score);
+            const is_correct = game_state['plot_positions'].map((x,i) => x == i);
+            const score = is_correct.reduce((a,b) => a+b);
             const score_box = document.getElementById("score-box");
             score_box.innerText = score + "/" + game_state['plot_positions'].length;
             const score_dialog = document.getElementById("score-dialog");
             score_dialog.showModal();
+            for (let i=0; i < game_state['plot_positions'].length; i++) {
+                const answer_plot = score_dialog.getElementsByClassName("name_freq")[i];
+                if (is_correct[i]) {
+                    answer_plot.classList.add("correct");
+                } else {
+                    answer_plot.classList.add("incorrect");
+                }
+            }
         };
 
         const currentDate = new Date();
