@@ -18,6 +18,12 @@
     <body>
         <h1> Daily Names </h1>
 
+        <p>
+            Rearrange the popularity by year plots onto the correct names by dragging and dropping the plots.
+            Data ranges from 1880 to 2024 and years with fewer than 5 occurrences are rounded to zero.
+            Popularity for each name is scaled according to its most popular year.
+        </p>
+
         <div class="name_freq_parent" id="name_freq_parent">
             <span class="name_freq"><span class="title"></span><span class="plot-container" id="name_freq1" draggable="true" ondragstart="freq_plot_dragstart(event)" ondragover="freq_plot_dragover(event)" ondrop="freq_plot_drop(event)"><svg data-idx="0" width=150 height=100 xmlns="http://www.w3.org/2000/svg"></svg></span></span>
             <span class="name_freq"><span class="title"></span><span class="plot-container" id="name_freq2" draggable="true" ondragstart="freq_plot_dragstart(event)" ondragover="freq_plot_dragover(event)" ondrop="freq_plot_drop(event)"><svg data-idx="1" width=150 height=100 xmlns="http://www.w3.org/2000/svg"></svg></span></span>
